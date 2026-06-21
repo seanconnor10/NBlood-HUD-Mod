@@ -1773,35 +1773,54 @@ void UpdateStatusBar(ClockTicks arg)
 
     if (gViewSize == 1)
     {
-        DrawStatMaskedSprite(2169, 12, 195, 0, 0, 256, (int)(65536*0.56));
-        DrawStatNumber("%d", pXSprite->health>>4, kSBarNumberHealth, 28, 187, 0, 0, 256);
+        DrawStatMaskedSprite(2169, 12, 195, 0, 0, 256, (int)(65536 * 0.56));
+        DrawStatNumber("%d", pXSprite->health >> 4, kSBarNumberHealth, 28, 187, 0, 0, 256);
         if (pPlayer->armor[1])
         {
-            DrawStatMaskedSprite(2578, 70, 186, 0, 0, 256, (int)(65536*0.5));
-            DrawStatNumber("%3d", pPlayer->armor[1]>>4, kSBarNumberArmor2, 83, 187, 0, 0, 256, (int)(65536*0.65));
+            DrawStatMaskedSprite(2578, 70, 186, 0, 0, 256, (int)(65536 * 0.5));
+            DrawStatNumber("%3d", pPlayer->armor[1] >> 4, kSBarNumberArmor2, 83, 187, 0, 0, 256, (int)(65536 * 0.65));
         }
         if (pPlayer->armor[0])
         {
-            DrawStatMaskedSprite(2586, 112, 195, 0, 0, 256, (int)(65536*0.5));
-            DrawStatNumber("%3d", pPlayer->armor[0]>>4, kSBarNumberArmor1, 125, 187, 0, 0, 256, (int)(65536*0.65));
+            DrawStatMaskedSprite(2586, 112, 195, 0, 0, 256, (int)(65536 * 0.5));
+            DrawStatNumber("%3d", pPlayer->armor[0] >> 4, kSBarNumberArmor1, 125, 187, 0, 0, 256, (int)(65536 * 0.65));
         }
         if (pPlayer->armor[2])
         {
-            DrawStatMaskedSprite(2602, 155, 196, 0, 0, 256, (int)(65536*0.5));
-            DrawStatNumber("%3d", pPlayer->armor[2]>>4, kSBarNumberArmor3, 170, 187, 0, 0, 256, (int)(65536*0.65));
+            DrawStatMaskedSprite(2602, 155, 196, 0, 0, 256, (int)(65536 * 0.5));
+            DrawStatNumber("%3d", pPlayer->armor[2] >> 4, kSBarNumberArmor3, 170, 187, 0, 0, 256, (int)(65536 * 0.65));
         }
 
-        DrawPackItemInStatusBar2(pPlayer, 225, 194, 240, 187, 512, (int)(65536*0.7));
+        DrawPackItemInStatusBar2(pPlayer, 225, 194, 240, 187, 512, (int)(65536 * 0.7));
 
-        if (pPlayer->curWeapon && pPlayer->weaponAmmo != -1)
+        //if (pPlayer->curWeapon && pPlayer->weaponAmmo != -1)
+        //{
+        //    int num = pPlayer->ammoCount[pPlayer->weaponAmmo];
+        //    if (pPlayer->weaponAmmo == 6)
+        //        num /= 10;
+        //    if ((unsigned int)gAmmoIcons[pPlayer->weaponAmmo].nTile < kMaxTiles)
+        //        DrawStatMaskedSprite(gAmmoIcons[pPlayer->weaponAmmo].nTile, 304, 192+gAmmoIcons[pPlayer->weaponAmmo].nYOffs,
+        //            0, 0, 512, gAmmoIcons[pPlayer->weaponAmmo].nScale);
+        //    DrawStatNumber("%3d", num, kSBarNumberAmmo, 267, 187, 0, 0, 512);
+        //}
+        
+        // Draw ammo icons and counts for each weapon
+        for (int i = 9; i >= 1; i--)
         {
-            int num = pPlayer->ammoCount[pPlayer->weaponAmmo];
-            if (pPlayer->weaponAmmo == 6)
-                num /= 10;
-            if ((unsigned int)gAmmoIcons[pPlayer->weaponAmmo].nTile < kMaxTiles)
-                DrawStatMaskedSprite(gAmmoIcons[pPlayer->weaponAmmo].nTile, 304, 192+gAmmoIcons[pPlayer->weaponAmmo].nYOffs,
-                    0, 0, 512, gAmmoIcons[pPlayer->weaponAmmo].nScale);
-            DrawStatNumber("%3d", num, kSBarNumberAmmo, 267, 187, 0, 0, 512);
+            int yOffset = i * 15;
+
+            bool isCurrent = pPlayer->curWeapon == i + 1;
+
+            // Draw ammo icon
+            if ((unsigned int)gAmmoIcons[i].nTile < kMaxTiles)
+                DrawStatMaskedSprite(gAmmoIcons[i].nTile, 315, 200 + gAmmoIcons[i].nYOffs - yOffset, 0, 0, 512, gAmmoIcons[i].nScale);
+
+            // Draw Number
+            int ammoCount = pPlayer->ammoCount[i];
+            if (i == 6)
+                ammoCount /= 10;
+            DrawStatNumber("%3d", ammoCount, kSBarNumberAmmo, isCurrent ? 275 : 290, 195 - yOffset, 0, 0, 512);
+            
         }
 
         if (gGameOptions.nGameType <= kGameTypeCoop) // don't show keys for bloodbath/teams as all players have every key
@@ -1829,6 +1848,21 @@ void UpdateStatusBar(ClockTicks arg)
     }
     if (gViewSize == 2)
     {
+        // Draw ammo counts at top of screen
+        DrawStatSprite(4300, 212, 10, 16, nPalette, 256);
+        for (int i = 9; i >= 1; i--)
+        {
+          int x   = 135 + ((i - 1) / 3) * 23;
+          int y   = 3 + ((i - 1) % 3) * 6;
+          int num = pPlayer->ammoCount[i];
+          if (i == 6)
+              num /= 10;
+          if (i == pPlayer->weaponAmmo)
+              DrawStatNumber("%3d", num, 2230, x, y, -128, 10);
+          else
+              DrawStatNumber("%3d", num, 2230, x, y, 32, 10);
+        }
+
         DrawStatSprite(2201, 34, 187, 16, nPalette, 256);
         if (pXSprite->health >= 16 || ((int)totalclock&16) || pXSprite->health == 0)
         {
